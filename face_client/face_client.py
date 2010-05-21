@@ -13,10 +13,11 @@
 import urllib
 import urllib2
 import json
+import os.path
 
 API_URL	= 'http://api.face.com'
 
-class FaceClient(object):
+class FaceClient():
 	def __init__(self, api_key = None, api_secret = None):
 		if not api_key or not api_secret:
 			raise AttributeError('Missing api_key or api_secret argument')
@@ -27,7 +28,7 @@ class FaceClient(object):
 		
 		self.twitter_credentials	= None
 		self.facebook_credentials 	= None
-		
+
 	def set_twitter_user_credentials(self, user = None, password = None):
 		if not user or not password:
 			raise AttributeError('Missing Twitter username or password')
@@ -58,10 +59,17 @@ class FaceClient(object):
 		
 		http://developers.face.com/docs/api/faces-detect/
 		"""
-		if not urls:
-			raise AttributeError('Missing URLs argument')
-
-		data = {'urls': urls}
+		if not urls and not file:
+			raise AttributeError('Missing URLs/filename argument')
+		
+		if file:
+			# Check if the file exists
+			if not os.path.exists(file):
+				raise IOError('File %s does not exist' % (file))
+			
+			data = {'file': file}
+		else:
+			data = {'urls': urls}
 
 		response = self.send_request('faces/detect', data)
 		return response
@@ -94,13 +102,22 @@ class FaceClient(object):
 		
 		http://developers.face.com/docs/api/faces-recognize/
 		"""
-		if not uids or not urls:
+		if not uids or (not urls and not file):
 			raise AttributeError('Missing required arguments')
 		
 		(facebook_uids, twitter_uids) = self.__check_user_auth_credentials(uids)
 		
-		data = {'uids': uids,
-				'urls': urls}
+		data = {'uids': uids}
+		
+		if file:
+			# Check if the file exists
+			if not os.path.exists(file):
+				raise IOError('File %s does not exist' % (file))
+			
+			data.update({'file': file})
+		else:
+			data.update({'urls': urls})
+		
 		self.__append_user_auth_data(data, facebook_uids, twitter_uids)
 		self.__append_optional_arguments(data, train = train, namespace = namespace)
 
@@ -279,9 +296,26 @@ class FaceClient(object):
 		if parameters:
 			data.update(parameters)
 		
-		post_data = urllib.urlencode(data)
+		# Local file is provided, use multi-part form
+		if 'file' in parameters:
+			from multipart import Multipart
+			form = Multipart()
+			
+			for key, value in data.iteritems():
+				
+				if key == 'file':
+					with open(value, 'r') as file:
+						form.file(os.path.basename(key), os.path.basename(key), file.read())
+				else:
+					form.field(key, value)
 		
-		request = urllib2.Request(url, data = post_data)
+			(content_type, post_data) = form.get()
+			headers = {'Content-Type': content_type}
+		else:
+			post_data = urllib.urlencode(data)
+			headers = {}
+		
+		request = urllib2.Request(url, headers = headers, data = post_data)
 		response = urllib2.urlopen(request)
 		response = response.read()
 		response_data = json.loads(response)
