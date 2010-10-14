@@ -52,7 +52,7 @@ class FaceClient():
 									'fb_session': session}
 	
 	### Recognition engine methods ###
-	def faces_detect(self, urls = None, file = None):
+	def faces_detect(self, urls = None, file = None, aggressive=False):
 		"""
 		Returns tags for detected faces in one or more photos, with geometric information
 		of the tag, eyes, nose and mouth, as well as the gender, glasses, and smiling attributes.
@@ -71,6 +71,9 @@ class FaceClient():
 		else:
 			data = {'urls': urls}
 
+		if aggressive:
+			data['detector'] = 'Aggressive'
+    
 		response = self.send_request('faces/detect', data)
 		return response
 	
