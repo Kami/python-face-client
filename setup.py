@@ -20,25 +20,25 @@ else:
     raise Exception('Cannot find version in __init__.py')
 fp.close()
 
-setup(name = 'face_client',
-	  version = '.' . join(map(str, version)),
-	  description = 'face.com face recognition Python API client library',
-	  author = 'Tomaž Muraus',
-	  author_email = 'tomaz@tomaz.me',
-	  license = 'BSD',
-	  url = 'http://github.com/Kami/python-face-client',
-	  download_url = 'http://github.com/Kami/python-face-client/',
-	  packages = ['face_client'],
-	  provides = ['face_client'], 
-	  
-	  classifiers = [
-		  'Development Status :: 4 - Beta',
-		  'Environment :: Console',
-		  'Intended Audience :: Developers',
-		  'License :: OSI Approved :: GNU General Public License (GPL)',
-		  'Operating System :: OS Independent',
-		  'Programming Language :: Python',
-		  'Topic :: Security',
-		  'Topic :: Software Development :: Libraries :: Python Modules',
-	],
+setup(name='face_client',
+      version='.' . join(map(str, version)),
+      description='face.com face recognition Python API client library',
+      author='Tomaž Muraus',
+      author_email='tomaz@tomaz.me',
+      license='BSD',
+      url='http://github.com/Kami/python-face-client',
+      download_url='http://github.com/Kami/python-face-client/',
+      packages=['face_client'],
+      provides=['face_client'],
+
+      classifiers=[
+          'Development Status :: 4 - Beta',
+          'Environment :: Console',
+          'Intended Audience :: Developers',
+          'License :: OSI Approved :: GNU General Public License (GPL)',
+          'Operating System :: OS Independent',
+          'Programming Language :: Python',
+          'Topic :: Security',
+          'Topic :: Software Development :: Libraries :: Python Modules',
+    ],
 )
