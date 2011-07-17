@@ -1,3 +1,7 @@
-0.1 - 21.05.2010:
+1.1 - in development:
+
+ - Minor changes to make the library work with Python 2.5
+
+1.0 - 21.05.2010:
 
  - Initial release
