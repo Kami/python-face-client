@@ -7,7 +7,7 @@
 # visit the official documentation at http://developers.face.com/docs/api/.
 #
 # Author: Tomaž Muraus (http://www.tomaz-muraus.info)
-# License: GPL (http://www.gnu.org/licenses/gpl.html)
+# License: BSD
 # Version: 1.0
 
 from __future__ import with_statement
