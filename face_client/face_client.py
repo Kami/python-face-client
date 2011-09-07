@@ -8,7 +8,6 @@
 #
 # Author: Tomaž Muraus (http://www.tomaz-muraus.info)
 # License: BSD
-# Version: 1.0
 
 from __future__ import with_statement
 
