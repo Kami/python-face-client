@@ -82,6 +82,8 @@ class FaceClient(object):
         if aggressive:
             data['detector'] = 'Aggressive'
 
+        data['attributes'] = 'all'
+
         response = self.send_request('faces/detect', data)
         return response
 
@@ -122,7 +124,7 @@ class FaceClient(object):
         (facebook_uids, twitter_uids) = \
                 self.__check_user_auth_credentials(uids)
 
-        data = {'uids': uids}
+        data = {'uids': uids, 'attributes': 'all'}
 
         if file:
             # Check if the file exists
