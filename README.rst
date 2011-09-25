@@ -14,15 +14,11 @@ If you want to perform actions involving Facebook or Twitter users you need to p
 
 #. **Facebook**::
 
-    client.set_facebook_credentials('FB_USER_ID', 'FACEBOOK_SESSION')
+    client.set_facebook_oauth_credentials('FB_USER_ID', 'FB_SESSION_ID', 'FB_OAUTH_TOKEN')
 
 #. **Twitter (OAuth)**::
 
     client.set_twitter_oauth_credentials('OAUTH_USER', 'OAUTH_SECRET', 'OAUTH_TOKEN')
-
-#. **Twitter (username and password)**::
-
-    client.set_twitter_user_credentials('TWITTER_USERNAME', 'TWITTER_PASSWORD')
 
 .. _face.com: http://developers.face.com/
 .. _official documentation: http://developers.face.com/docs/api/
