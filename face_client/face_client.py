@@ -44,8 +44,8 @@ class FaceClient(object):
                                     'twitter_oauth_secret': secret,
                                     'twitter_oauth_token': token}
 
-    def set_facebook_access_token(self, user_id=None, session_id=None,
-                                  oauth_token=None):
+    def set_facebook_oauth_credentials(self, user_id=None, session_id=None,
+                                       oauth_token=None):
         for (key, value) in [('user_id', user_id), ('session_id', session_id),
                              ('oauth_token', oauth_token)]:
             if not value:
