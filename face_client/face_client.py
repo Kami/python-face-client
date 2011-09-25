@@ -14,6 +14,7 @@ from __future__ import with_statement
 import urllib
 import urllib2
 import os.path
+import warnings
 
 try:
     import json
@@ -35,6 +36,11 @@ class FaceClient(object):
         self.twitter_credentials = None
         self.facebook_credentials = None
 
+    def set_twitter_user_credentials(self, *args, **kwargs):
+        warnings.warn(('Twitter username & password auth has been ' +
+                      'deprecated. Please use oauth based auth - ' +
+                      'set_twitter_oauth_credentials()'))
+
     def set_twitter_oauth_credentials(self, user=None, secret=None,
                                       token=None):
         if not user or not secret or not token:
@@ -43,6 +49,12 @@ class FaceClient(object):
         self.twitter_credentials = {'twitter_oauth_user': user,
                                     'twitter_oauth_secret': secret,
                                     'twitter_oauth_token': token}
+
+    def set_facebook_access_token(self, *args, **kwargs):
+        warnings.warn(('Method has been renamed to ' +
+                       ' set_facebook_oauth_credentials(). Support for' +
+                      'username & password based auth has also been dropped.' +
+                      'Now only oAuth2 token based auth is supported'))
 
     def set_facebook_oauth_credentials(self, user_id=None, session_id=None,
                                        oauth_token=None):
