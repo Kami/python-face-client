@@ -6,7 +6,7 @@
 # For more information about the API and the return values,
 # visit the official documentation at http://developers.face.com/docs/api/.
 #
-# Author: Tomaž Muraus (http://www.tomaz-muraus.info)
+# Author: Tomaž Muraus (http://www.tomaz.me)
 # License: BSD
 
 from __future__ import with_statement
@@ -51,12 +51,16 @@ class FaceClient(object):
                                     'twitter_oauth_secret': secret,
                                     'twitter_oauth_token': token}
 
-    def set_facebook_credentials(self, user=None, session=None):
-        if not user or not session:
-            raise AttributeError('Missing Facebook user or session argument')
+    def set_facebook_access_token(self, user_id=None, session_id=None,
+                                  oauth_token=None):
+        for (key, value) in [('user_id', user_id), ('session_id', session_id),
+                             ('oauth_token', oauth_token)]:
+            if not value:
+                raise AttributeError('Missing required argument: %s' % (key))
 
-        self.facebook_credentials = {'fb_user': user,
-                                    'fb_session': session}
+        self.facebook_credentials = {'fb_user_id': user_id,
+                                     'fb_session_id': session_id,
+                                     'fb_oauth_token': oauth_token}
 
     ### Recognition engine methods ###
     def faces_detect(self, urls=None, file=None, aggressive=False):
@@ -295,9 +299,11 @@ class FaceClient(object):
 
     def __append_user_auth_data(self, data, facebook_uids, twitter_uids):
         if facebook_uids:
-            data.update({'user_auth': 'fb_user:%s,fb_session:%s' %
-                         (self.facebook_credentials['fb_user'],
-                         self.facebook_credentials['fb_session'])})
+            data.update({'user_auth': 'fb_user:%s,fb_session:%s,'+
+                                      'fb_oauth_token:%s' %
+                         (self.facebook_credentials['fb_user_id'],
+                          self.facebook_credentials['fb_session_id'],
+                          self.facebook_credentials['fb_oauth_token'])})
 
         if twitter_uids:
             # If both user/password and OAuth credentials are provided, use
