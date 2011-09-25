@@ -292,7 +292,7 @@ class FaceClient(object):
 
     def __append_user_auth_data(self, data, facebook_uids, twitter_uids):
         if facebook_uids:
-            data.update({'user_auth': 'fb_user:%s,fb_session:%s,'+
+            data.update({'user_auth': 'fb_user:%s,fb_session:%s,' +
                                       'fb_oauth_token:%s' %
                          (self.facebook_credentials['fb_user_id'],
                           self.facebook_credentials['fb_session_id'],
