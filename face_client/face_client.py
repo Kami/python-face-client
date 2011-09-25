@@ -35,13 +35,6 @@ class FaceClient(object):
         self.twitter_credentials = None
         self.facebook_credentials = None
 
-    def set_twitter_user_credentials(self, user=None, password=None):
-        if not user or not password:
-            raise AttributeError('Missing Twitter username or password')
-
-        self.twitter_credentials = {'twitter_user': user,
-                                    'twitter_password': password}
-
     def set_twitter_oauth_credentials(self, user=None, secret=None,
                                       token=None):
         if not user or not secret or not token:
@@ -306,21 +299,12 @@ class FaceClient(object):
                           self.facebook_credentials['fb_oauth_token'])})
 
         if twitter_uids:
-            # If both user/password and OAuth credentials are provided, use
-            # OAuth as default
-            if self.twitter_credentials.get('twitter_oauth_user', None):
-                data.update({'user_auth':
-                             ('twitter_oauth_user:%s,twitter_oauth_secret:%s,'
-                              'twitter_oauth_token:%s' %
-                            (self.twitter_credentials['twitter_oauth_user'],
-                             self.twitter_credentials['twitter_oauth_secret'],
-                             self.twitter_credentials['twitter_oauth_token']))}
-                            )
-            else:
-                data.update({'user_auth':
-                             'twitter_user:%s,twitter_password:%s' %
-                             (self.twitter_credentials['twitter_user'],
-                             self.twitter_credentials['twitter_password'])})
+            data.update({'user_auth':
+                         ('twitter_oauth_user:%s,twitter_oauth_secret:%s,'
+                          'twitter_oauth_token:%s' %
+                        (self.twitter_credentials['twitter_oauth_user'],
+                         self.twitter_credentials['twitter_oauth_secret'],
+                         self.twitter_credentials['twitter_oauth_token']))})
 
     def __append_optional_arguments(self, data, **kwargs):
         for key, value in kwargs.iteritems():
