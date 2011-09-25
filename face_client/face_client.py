@@ -21,7 +21,8 @@ try:
 except ImportError:
     import simplejson as json
 
-API_URL = 'http://api.face.com'
+API_HOST = 'api.face.com'
+USE_SSL = True
 
 
 class FaceClient(object):
@@ -324,7 +325,12 @@ class FaceClient(object):
                 data.update({key: value})
 
     def send_request(self, method=None, parameters=None):
-        url = '%s/%s' % (API_URL, method)
+        if USE_SSL:
+            protocol = 'https://'
+        else:
+            protocol = 'http://'
+
+        url = '%s%s/%s' % (protocol, API_HOST, method)
 
         data = {'api_key': self.api_key,
                 'api_secret': self.api_secret,
