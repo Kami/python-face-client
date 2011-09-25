@@ -1,4 +1,12 @@
-1.1 - in development:
+1.2 - 25.09.2011:
+
+ - Remove deprecated Twiter username and password based auth
+ - Remove deprecated Facebook username and password based auth
+   (remove set_twitter_user_credentials method)
+ - Add support for Facebook oAuth2 token based auth
+   (set_facebook_oauth_credentials method)
+
+1.1 - 07.09.2011:
 
  - Minor changes to make the library work with Python 2.5
 
