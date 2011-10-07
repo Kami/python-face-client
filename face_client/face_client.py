@@ -340,7 +340,7 @@ class FaceClient(object):
             data.update(parameters)
 
         # Local file is provided, use multi-part form
-        if 'file' in parameters:
+        if parameters and 'file' in parameters:
             from multipart import Multipart
             form = Multipart()
 
