@@ -6,70 +6,48 @@
 # For more information about the API and the return values,
 # visit the official documentation at http://developers.face.com/docs/api/.
 #
-# Author: Tomaž Muraus (http://www.tomaz.me)
+# Rewrite: Chris Piekarski (http://www.cpiekarski.com)
 # License: BSD
 
-from __future__ import with_statement
 
 import urllib
 import urllib2
-import os.path
-import warnings
+import os
+import json
+import logging
 
-try:
-    import json
-except ImportError:
-    import simplejson as json
-
-API_HOST = 'api.face.com'
-USE_SSL = True
-
+logger = logging.getLogger("face")
+logger.setLevel(logging.DEBUG)
+FORMAT = '[%(asctime)-15s][%(levelname)s][%(funcName)s] %(message)s'
+logging.basicConfig(format=FORMAT)
 
 class FaceClient(object):
-    def __init__(self, api_key=None, api_secret=None):
-        if not api_key or not api_secret:
-            raise AttributeError('Missing api_key or api_secret argument')
+    def __init__(self, apiKey, apiSecret, responseformat='json', ssl=True):
+        self._key = apiKey
+        self._secret = apiSecret
+        self._format = responseformat
 
-        self.api_key = api_key
-        self.api_secret = api_secret
-        self.format = 'json'
+        self._credentials = {"facebook": {}, "twitter": {}}
+        self._ssl = True
+        self._apiurl = "api.face.com"
+        
+        self._formatInput = lambda m, r : "'{}' received response was '{}'".format(m,r)
+        self._formatOutput = lambda m, d : "sending '{}' to api method '{}'".format(d,m)
 
-        self.twitter_credentials = None
-        self.facebook_credentials = None
+    def twitterCredentials(self, user, secret,token):
+        """ user - twitter user id
+            secret - twitter oauth secret
+            token - twitter oauth token
+        """
+        self._credentials["twitter"].update({'user': user,'secret': secret, 'token': token})
 
-    def set_twitter_user_credentials(self, *args, **kwargs):
-        warnings.warn(('Twitter username & password auth has been ' +
-                      'deprecated. Please use oauth based auth - ' +
-                      'set_twitter_oauth_credentials()'))
+    def facebookCredentials(self, user, token):
+        """ user - facebook user id
+            token - facebook oauth2 token
+        """
+        self._credentials["facebook"].update({'user': user,'token': token})
 
-    def set_twitter_oauth_credentials(self, user=None, secret=None,
-                                      token=None):
-        if not user or not secret or not token:
-            raise AttributeError('Missing one of the required arguments')
-
-        self.twitter_credentials = {'twitter_oauth_user': user,
-                                    'twitter_oauth_secret': secret,
-                                    'twitter_oauth_token': token}
-
-    def set_facebook_access_token(self, *args, **kwargs):
-        warnings.warn(('Method has been renamed to ' +
-                       ' set_facebook_oauth_credentials(). Support for' +
-                      'username & password based auth has also been dropped.' +
-                      'Now only oAuth2 token based auth is supported'))
-
-    def set_facebook_oauth_credentials(self, user_id=None, session_id=None,
-                                       oauth_token=None):
-        for (key, value) in [('user_id', user_id), ('session_id', session_id),
-                             ('oauth_token', oauth_token)]:
-            if not value:
-                raise AttributeError('Missing required argument: %s' % (key))
-
-        self.facebook_credentials = {'fb_user_id': user_id,
-                                     'fb_session_id': session_id,
-                                     'fb_oauth_token': oauth_token}
-
-    ### Recognition engine methods ###
-    def faces_detect(self, urls=None, file=None, aggressive=False):
+    def facesDetect(self, urls=None, file=None, aggressive=False):
         """
         Returns tags for detected faces in one or more photos, with geometric
         information of the tag, eyes, nose and mouth, as well as the gender,
@@ -77,9 +55,6 @@ class FaceClient(object):
 
         http://developers.face.com/docs/api/faces-detect/
         """
-        if not urls and not file:
-            raise AttributeError('Missing URLs/filename argument')
-
         if file:
             # Check if the file exists
             if not os.path.exists(file):
@@ -93,31 +68,26 @@ class FaceClient(object):
             data['detector'] = 'Aggressive'
 
         data['attributes'] = 'all'
+        return self._wrapSend('faces/detect', data)
 
-        response = self.send_request('faces/detect', data)
-        return response
-
-    def faces_status(self, uids=None, namespace=None):
+    def facesStatus(self, uids, **kwargs):
         """
         Reports training set status for the specified UIDs.
 
         http://developers.face.com/docs/api/faces-status/
         """
-        if not uids:
-            raise AttributeError('Missing user IDs')
 
-        (facebook_uids, twitter_uids) = \
-                self.__check_user_auth_credentials(uids)
+        addFacebookCred = True if self._hasFacebookCredentials() else False
+        addTwitterCred = True if self._hasTwitterCredentials() else False
 
         data = {'uids': uids}
-        self.__append_user_auth_data(data, facebook_uids, twitter_uids)
-        self.__append_optional_arguments(data, namespace=namespace)
+        
+        self._appendCredentials(data, addFacebookCred, addTwitterCred)
+        self._appendOptionalParams(data, **kwargs)
 
-        response = self.send_request('faces/status', data)
-        return response
+        return self._wrapSend('faces/status', data)
 
-    def faces_recognize(self, uids=None, urls=None, file=None, train=None,
-                        namespace=None):
+    def facesRecognize(self, uids, urls=None, file=None, **kwargs):
         """
         Attempts to detect and recognize one or more user IDs' faces, in one
         or more photos.
@@ -128,11 +98,8 @@ class FaceClient(object):
 
         http://developers.face.com/docs/api/faces-recognize/
         """
-        if not uids or (not urls and not file):
-            raise AttributeError('Missing required arguments')
-
-        (facebook_uids, twitter_uids) = \
-                self.__check_user_auth_credentials(uids)
+        addFacebookCred = True if self._hasFacebookCredentials() else False
+        addTwitterCred = True if self._hasTwitterCredentials() else False
 
         data = {'uids': uids, 'attributes': 'all'}
 
@@ -145,71 +112,63 @@ class FaceClient(object):
         else:
             data.update({'urls': urls})
 
-        self.__append_user_auth_data(data, facebook_uids, twitter_uids)
-        self.__append_optional_arguments(data, train=train,
-                                         namespace=namespace)
+        self._appendCredentials(data, addFacebookCred, addTwitterCred)
+        self._appendOptionalParams(data, **kwargs)
 
-        response = self.send_request('faces/recognize', data)
-        return response
+        return self._wrapSend('faces/recognize', data)
 
-    def faces_train(self, uids=None, namespace=None):
+    def facesTrain(self, uids, **kwargs):
         """
         Calls the training procedure for the specified UIDs, and reports back
         changes.
 
         http://developers.face.com/docs/api/faces-train/
         """
-        if not uids:
-            raise AttributeError('Missing user IDs')
-
-        (facebook_uids, twitter_uids) = \
-                self.__check_user_auth_credentials(uids)
+        addFacebookCred = True if self._hasFacebookCredentials() else False
+        addTwitterCred = True if self._hasTwitterCredentials() else False
 
         data = {'uids': uids}
-        self.__append_user_auth_data(data, facebook_uids, twitter_uids)
-        self.__append_optional_arguments(data, namespace=namespace)
+        self._appendCredentials(data, addFacebookCred, addTwitterCred)
+        self._appendOptionalParams(data, **kwargs)
 
-        response = self.send_request('faces/train', data)
-        return response
+        return self._wrapSend('faces/train', data)
 
     ### Methods for managing face tags ###
-    def tags_get(self, uids=None, urls=None, pids=None, order='recent', \
-                limit=5, together=False, filter=None, namespace=None):
+    def tagsGet(self, uids=None, urls=None, order='recent',limit=5, together=False, **kwargs):
         """
         Returns saved tags in one or more photos, or for the specified
         User ID(s).
         This method also accepts multiple filters for finding tags
         corresponding to a more specific criteria such as front-facing,
         recent, or where two or more users appear together in same photos.
+        
+        kwargs:
+            pids=None,filter=None, namespace=None
 
         http://developers.face.com/docs/api/tags-get/
         """
-        (facebook_uids, twitter_uids) = \
-                self.__check_user_auth_credentials(uids)
+        addFacebookCred = True if self._hasFacebookCredentials() else False
+        addTwitterCred = True if self._hasTwitterCredentials() else False
 
         data = {'uids': uids,
                 'urls': urls,
                 'together': together,
                 'limit': limit}
-        self.__append_user_auth_data(data, facebook_uids, twitter_uids)
-        self.__append_optional_arguments(data, pids=pids, filter=filter,
-                                        namespace=namespace)
 
-        response = self.send_request('tags/get', data)
-        return response
+        self._appendCredentials(data, addFacebookCred, addTwitterCred)
+        self._appendOptionalParams(data, **kwargs)
+        
+        return self._wrapSend('tags/get', data)
 
-    def tags_add(self, url=None, x=None, y=None, width=None, uid=None,
-                tagger_id=None, label=None, password=None):
+    def tagsAdd(self, url, x, y, width, uid,tagger_id, **kwargs):
         """
         Add a (manual) face tag to a photo. Use this method to add face tags
         where those were not detected for completeness of your service.
 
         http://developers.face.com/docs/api/tags-add/
         """
-        if not url or not x or not y or not width or not uid or not tagger_id:
-            raise AttributeError('Missing one of the required arguments')
-
-        (facebook_uids, twitter_uids) = self.__check_user_auth_credentials(uid)
+        addFacebookCred = True if self._hasFacebookCredentials() else False
+        addTwitterCred = True if self._hasTwitterCredentials() else False
 
         data = {'url': url,
                 'x': x,
@@ -217,124 +176,142 @@ class FaceClient(object):
                 'width': width,
                 'uid': uid,
                 'tagger_id': tagger_id}
-        self.__append_user_auth_data(data, facebook_uids, twitter_uids)
-        self.__append_optional_arguments(data, label=label, password=password)
+        
+        self._appendCredentials(data, addFacebookCred, addTwitterCred)
+        self._appendOptionalParams(data, **kwargs)
+        return self._wrapSend('tags/add', data)
 
-        response = self.send_request('tags/add', data)
-        return response
-
-    def tags_save(self, tids=None, uid=None, tagger_id=None, label=None, \
-                password=None):
+    def tagsSave(self, tids, uid, **kwargs):
         """
         Saves a face tag. Use this method to save tags for training the
         face.com index, or for future use of the faces.detect and tags.get
         methods.
+        
+        tids - one or more tag ids to associate with the passed uid. 
+               The tag id is a reference field in the response of faces.detect and faces.recognize methods
+        uid  - the user ID of the user being tagged
+        kwargs:        
+            label - the display name of the user (usually First and Last name)
+            tagger_id - the ID of the user who's adding the tag
+            password - for use when saving tags is a privileged action in your client-side application
 
         http://developers.face.com/docs/api/tags-save/
         """
-        if not tids or not uid:
-            raise AttributeError('Missing required argument')
-
-        (facebook_uids, twitter_uids) = self.__check_user_auth_credentials(uid)
-
+        addFacebookCred = True if self._hasFacebookCredentials() else False
+        addTwitterCred = True if self._hasTwitterCredentials() else False
+        
         data = {'tids': tids,
-                'uid': uid}
-        self.__append_user_auth_data(data, facebook_uids, twitter_uids)
-        self.__append_optional_arguments(data, tagger_id=tagger_id,
-                                         label=label, password=password)
+                'uid': uid }
+        
+        self._appendCredentials(data, addFacebookCred, addTwitterCred)
 
-        response = self.send_request('tags/save', data)
-        return response
+        self._appendOptionalParams(data, **kwargs)
 
-    def tags_remove(self, tids=None, password=None):
+        return self._wrapSend('tags/save', data)
+
+    def tagsRemove(self, tids, **kwargs):
         """
         Remove a previously saved face tag from a photo.
 
+        kwargs:
+            password - 
         http://developers.face.com/docs/api/tags-remove/
         """
-        if not tids:
-            raise AttributeError('Missing tag IDs')
-
         data = {'tids': tids}
-
-        response = self.send_request('tags/remove', data)
-        return response
+        addFacebookCred = True if self._hasFacebookCredentials() else False
+        addTwitterCred = True if self._hasTwitterCredentials() else False
+        self._appendCredentials(data, addFacebookCred, addTwitterCred)
+        self._appendOptionalParams(data,password=password)
+        return self._wrapSend('tags/remove', data)
 
     ### Account management methods ###
-    def account_limits(self):
+    def accountLimits(self):
         """
         Returns current rate limits for the account represented by the passed
         API key and Secret.
 
         http://developers.face.com/docs/api/account-limits/
         """
-        response = self.send_request('account/limits')
-        return response['usage']
+        return self._wrapSend('account/limits', {})
 
-    def account_users(self, namespaces=None):
+    def accountUsers(self, namespaces):
         """
         Returns current rate limits for the account represented by the passed
         API key and Secret.
+        
+        namespaces - comma separated list of one or more private namespaces
 
-        http://developers.face.com/docs/api/account-limits/
+        http://api.face.com/account/users.format
         """
-        if not namespaces:
-            raise AttributeError('Missing namespaces argument')
-
-        response = self.send_request('account/users',
-                                     {'namespaces': namespaces})
-
+        return self._wrapSend('account/users', {'namespaces': namespaces})
+    
+    def _wrapSend(self, method, data):
+        logger.debug(self._formatOutput(method,data))
+        response = self._sendRequest('account/limits', data)
+        logger.debug(self._formatInput(method,response))
         return response
+    
+    def _hasFacebookCredentials(self):
+        return True if len(self._credentials["facebook"]) else False
+    
+    def _hasTwitterCredentials(self):
+        return True if len(self._credentials["twitter"]) else False
 
-    def __check_user_auth_credentials(self, uids):
-        # Check if needed credentials are provided
-        facebook_uids = [uid for uid in uids.split(',') \
-                        if uid.find('@facebook.com') != -1]
-        twitter_uids = [uid for uid in uids.split(',') \
-                        if uid.find('@twitter.com') != -1]
+    def _getUserIDs(self, uids, domain):
+        return [uid for uid in uids.split(',') if uid.find(domain) != -1]
 
-        if facebook_uids and not self.facebook_credentials:
-            raise AttributeError('You need to set Facebook credentials ' +
-                                  'to perform action on Facebook users')
+    def _getFacebookUserIDs(self, uids):
+        return self._getUserIDs(uids,'@facebook.com')
+    
+    def _getTwitterUserIDs(self, uids):
+        return self._getUserIDs(uids,'@twitter.com')
 
-        if twitter_uids and not self.twitter_credentials:
-            raise AttributeError('You need to set Twitter credentials to ' +
-                                  'perform action on Twitter users')
+    def _getFacebookCredentials(self):
+        fb = {}
+        if self._hasFacebookCredentials():
+            fb["fb_user"] = self._credentials["facebook"]["user"]
+            fb["fb_oauth_token"] = self._credentials["facebook"]["token"]
+        return fb
+    
+    def _getTwitterCredentials(self):
+        tweet = {}
+        if self._hasTwitterCredentials():
+            tweet["twitter_oauth_user"] = self._credentials["twitter"]["user"]
+            tweet["twitter_oauth_secret"] = self._credentials["twitter"]["secret"]
+            tweet["twitter_oauth_token"] = self._credentials["twitter"]["token"]
+        return tweet
+    
+    def _addFacebookCredentials(self, data):
+        data.update({"user_auth":self._getFacebookCredentials()})
+        
+    def _addTwitterCredentials(self, data):
+        data.update({"user_auth":self._getTwitterCredentials()})
+        
+    def _appendCredentials(self, data, facebook=True, twitter=True):
+        if facebook:
+            self._addFacebookCredentials(data)
+        if twitter:
+            self._addTwitterCredentials(data)
 
-        return (facebook_uids, twitter_uids)
-
-    def __append_user_auth_data(self, data, facebook_uids, twitter_uids):
-        if facebook_uids:
-            data.update({'user_auth': 'fb_user:%s,fb_session:%s,' +
-                                      'fb_oauth_token:%s' %
-                         (self.facebook_credentials['fb_user_id'],
-                          self.facebook_credentials['fb_session_id'],
-                          self.facebook_credentials['fb_oauth_token'])})
-
-        if twitter_uids:
-            data.update({'user_auth':
-                         ('twitter_oauth_user:%s,twitter_oauth_secret:%s,'
-                          'twitter_oauth_token:%s' %
-                        (self.twitter_credentials['twitter_oauth_user'],
-                         self.twitter_credentials['twitter_oauth_secret'],
-                         self.twitter_credentials['twitter_oauth_token']))})
-
-    def __append_optional_arguments(self, data, **kwargs):
+    def _appendOptionalParams(self, data, **kwargs):
         for key, value in kwargs.iteritems():
             if value:
                 data.update({key: value})
 
-    def send_request(self, method=None, parameters=None):
-        if USE_SSL:
+    def _sendRequest(self, method=None, parameters=None):
+        """ method - api method to call
+            parameters - optional data parameters for method call
+        """
+        if self._ssl:
             protocol = 'https://'
         else:
             protocol = 'http://'
 
-        url = '%s%s/%s' % (protocol, API_HOST, method)
+        url = '%s%s/%s.%s' % (protocol, self._apiurl, method,self._format)
 
-        data = {'api_key': self.api_key,
-                'api_secret': self.api_secret,
-                'format': self.format}
+        data = {'api_key': self._key,
+                'api_secret': self._secret,
+                'format': self._format}
 
         if parameters:
             data.update(parameters)
