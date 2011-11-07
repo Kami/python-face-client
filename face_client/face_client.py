@@ -21,6 +21,9 @@ logger.setLevel(logging.DEBUG)
 FORMAT = '[%(asctime)-15s][%(levelname)s][%(funcName)s] %(message)s'
 logging.basicConfig(format=FORMAT)
 
+def setLogLevel(level):
+    logger.setLevel(level)
+
 class FaceClient(object):
     def __init__(self, apiKey, apiSecret, responseformat='json', ssl=True):
         self._key = apiKey
