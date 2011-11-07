@@ -32,7 +32,8 @@ class FaceClient(object):
         self._apiurl = "api.face.com"
         
         self._formatInput = lambda m, r : "'{}' received response was '{}'".format(m,r)
-        self._formatOutput = lambda m, d : "sending '{}' to api method '{}'".format(d,m)
+        self._formatOutput = lambda m, d : "'{}' sending {}'".format(m,d)
+        self._commaOutput = lambda d : unicode(",".join(["{}:{}".format(k,v) for k,v in d.iteritems()]))
 
     def twitterCredentials(self, user, secret,token):
         """ user - twitter user id
@@ -129,7 +130,7 @@ class FaceClient(object):
 
         data = {'uids': uids}
         self._appendCredentials(data, addFacebookCred, addTwitterCred)
-        self._appendOptionalParams(data, **kwargs)
+        self._appendOptionalParams(data, callback_url="no-reply",**kwargs)
 
         return self._wrapSend('faces/train', data)
 
@@ -247,7 +248,7 @@ class FaceClient(object):
     
     def _wrapSend(self, method, data):
         logger.debug(self._formatOutput(method,data))
-        response = self._sendRequest('account/limits', data)
+        response = self._sendRequest(method, data)
         logger.debug(self._formatInput(method,response))
         return response
     
@@ -282,10 +283,12 @@ class FaceClient(object):
         return tweet
     
     def _addFacebookCredentials(self, data):
-        data.update({"user_auth":self._getFacebookCredentials()})
+        x = self._commaOutput(self._getFacebookCredentials())
+        print x
+        data.update({"user_auth":x})
         
     def _addTwitterCredentials(self, data):
-        data.update({"user_auth":self._getTwitterCredentials()})
+        data.update({"user_auth":self._commaOutput(self._getTwitterCredentials())})
         
     def _appendCredentials(self, data, facebook=True, twitter=True):
         if facebook:
@@ -337,6 +340,8 @@ class FaceClient(object):
             headers = {}
 
         request = urllib2.Request(url, headers=headers, data=post_data)
+        logger.debug("url: {}".format(request.get_full_url()))
+        logger.debug("data: {}".format(request.get_data()))
         response = urllib2.urlopen(request)
         response = response.read()
         response_data = json.loads(response)
