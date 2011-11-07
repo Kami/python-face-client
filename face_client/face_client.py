@@ -283,10 +283,8 @@ class FaceClient(object):
         return tweet
     
     def _addFacebookCredentials(self, data):
-        x = self._commaOutput(self._getFacebookCredentials())
-        print x
-        data.update({"user_auth":x})
-        
+        data.update({"user_auth":self._commaOutput(self._getFacebookCredentials())})
+              
     def _addTwitterCredentials(self, data):
         data.update({"user_auth":self._commaOutput(self._getTwitterCredentials())})
         
