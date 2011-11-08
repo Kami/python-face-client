@@ -16,6 +16,10 @@ import os
 import json
 import logging
 
+from poster.encode import multipart_encode
+from poster.streaminghttp import register_openers
+register_openers()
+
 logger = logging.getLogger("face")
 logger.setLevel(logging.DEBUG)
 FORMAT = '[%(asctime)-15s][%(levelname)s][%(funcName)s] %(message)s'
@@ -225,7 +229,7 @@ class FaceClient(object):
         addFacebookCred = True if self._hasFacebookCredentials() else False
         addTwitterCred = True if self._hasTwitterCredentials() else False
         self._appendCredentials(data, addFacebookCred, addTwitterCred)
-        self._appendOptionalParams(data,password=password)
+        self._appendOptionalParams(data,**kwargs)
         return self._wrapSend('tags/remove', data)
 
     ### Account management methods ###
@@ -321,28 +325,15 @@ class FaceClient(object):
             data.update(parameters)
 
         # Local file is provided, use multi-part form
-        if parameters and 'file' in parameters:
-            from multipart import Multipart
-            form = Multipart()
-
-            for key, value in data.iteritems():
-
-                if key == 'file':
-                    with open(value, 'r') as file:
-                        form.file(os.path.basename(key), os.path.basename(key),
-                                  file.read())
-                else:
-                    form.field(key, value)
-
-            (content_type, post_data) = form.get()
-            headers = {'Content-Type': content_type}
+        if 'file' in data:
+            fileName = data['file']
+            data['file'] = open(fileName, "rb")
+            datagen, headers = multipart_encode(data)
         else:
-            post_data = urllib.urlencode(data)
+            datagen = urllib.urlencode(data)
             headers = {}
 
-        request = urllib2.Request(url, headers=headers, data=post_data)
-        logger.debug("url: {}".format(request.get_full_url()))
-        logger.debug("data: {}".format(request.get_data()))
+        request = urllib2.Request(url, datagen, headers)
         response = urllib2.urlopen(request)
         response = response.read()
         response_data = json.loads(response)
