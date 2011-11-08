@@ -19,12 +19,12 @@ http://farm1.static.flickr.com/41/104498903_bad315cee0.jpg
 
 #. Now we import the module and instantiate the class with our face.com **api_key** and **api_secret** (you can get them by registering your application on `face.com page`_)::
 
-    >> from face_client import FaceClient
-    >> client = FaceClient('API_KEY', 'API_SECRET')
+    >> import face
+    >> client = face.FaceClient('API_KEY', 'API_SECRET')
 
 #. Before training our namespace index I just want to show you that the image is not already recognized::
 
-    >> client.faces_recognize('guido', 'http://farm1.static.flickr.com/41/104498903_bad315cee0.jpg', namespace = 'testns')
+    >> client.facesRecognize('guido', 'http://farm1.static.flickr.com/41/104498903_bad315cee0.jpg', namespace = 'testns')
 
     {u'no_training_set': [u'guido@testns'],
     u'photos': [{u'height': 375,
@@ -45,7 +45,7 @@ http://farm1.static.flickr.com/41/104498903_bad315cee0.jpg
 
    In this example, I will use faces_detect::
 
-    >> response = client.faces_detect('http://savasplace.com/wp-content/uploads/2009/04/guido-van-rossum.jpg,http://farm1.static.flickr.com/43/104506247_c748f20b83.jpg,http://farm1.static.flickr.com/67/200126290_2798330e61.jpg')
+    >> response = client.facesDetect('http://savasplace.com/wp-content/uploads/2009/04/guido-van-rossum.jpg,http://farm1.static.flickr.com/43/104506247_c748f20b83.jpg,http://farm1.static.flickr.com/67/200126290_2798330e61.jpg')
     >> tids = [photo['tags'][0]['tid'] for photo in response['photos']]
 
     >> tids
@@ -56,7 +56,7 @@ http://farm1.static.flickr.com/41/104498903_bad315cee0.jpg
 
    We can also check that the tags were saved by using the **tags_get** method::
 
-    >> client.tags_get('guido@testns')
+    >> client.tagsGet('guido@testns')
 
     {u'message': u'Tags saved with uid: guido@testns ,label: Guido Van Rossum',
      u'saved_tags': [{u'detected_tid': u'TEMP_F@cc96b0429a7946711de5693c5ff67c46_cf224a584e80672ea7fa15a936ed1367_47.00_27.83_0',
@@ -69,8 +69,8 @@ http://farm1.static.flickr.com/41/104498903_bad315cee0.jpg
 
 #. Now when we have the temporary tag ids, we can use them save to save the tags and train our namespace index::
 
-    >> client.tags_save(tids = ',' . join(tids), uid = 'guido@testns', label = 'Guido Van Rossum')
-    >> client.faces_train('guido@testns')
+    >> client.tagsSave(tids = ',' . join(tids), uid = 'guido@testns', label = 'Guido Van Rossum')
+    >> client.facesTrain('guido@testns')
 
     {u'status': u'success',
     u'unchanged': [{u'last_trained': 1274462404,
@@ -80,7 +80,7 @@ http://farm1.static.flickr.com/41/104498903_bad315cee0.jpg
 
 #. Now after we have trained our index, lets check if Guido is recognized::
 
-    >> client.faces_recognize('all', 'http://farm1.static.flickr.com/41/104498903_bad315cee0.jpg', namespace = 'testns')
+    >> client.facesRecognize('all', 'http://farm1.static.flickr.com/41/104498903_bad315cee0.jpg', namespace = 'testns')
 
     {u'photos': [{u'height': 375,
               u'pid': u'F@2981c22e78cc0f12276825aa0b05df86_cf224a584e80672ea7fa15a936ed1367',
