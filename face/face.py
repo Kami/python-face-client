@@ -34,7 +34,7 @@ class FaceClient(object):
         self._ssl = True
         self._apiurl = "api.face.com"
         
-        self._formatInput = lambda m, r : "'{}' received response was '{}'".format(m,r)
+        self._formatInput = lambda m, r :"'{}' received response was '{}'".format(m,r)
         self._formatOutput = lambda m, d : "'{}' sending {}'".format(m,d)
         self._commaOutput = lambda d : unicode(",".join(["{}:{}".format(k,v) for k,v in d.iteritems()]))
 
