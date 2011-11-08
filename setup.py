@@ -8,7 +8,7 @@ version_re = re.compile(
     r'__version__ = (\(.*?\))')
 
 cwd = os.path.dirname(os.path.abspath(__file__))
-fp = open(os.path.join(cwd, 'face_client', '__init__.py'))
+fp = open(os.path.join(cwd, 'face', '__init__.py'))
 
 version = None
 for line in fp:
@@ -20,16 +20,16 @@ else:
     raise Exception('Cannot find version in __init__.py')
 fp.close()
 
-setup(name='face_client',
+setup(name='face',
       version='.' . join(map(str, version)),
       description='face.com face recognition Python API client library',
       author='Tomaž Muraus',
       author_email='tomaz@tomaz.me',
       license='BSD',
-      url='http://github.com/Kami/python-face-client',
-      download_url='http://github.com/Kami/python-face-client/',
-      packages=['face_client'],
-      provides=['face_client'],
+      url='https://github.com/chris-piekarski/python-face-client',
+      download_url='git://github.com/chris-piekarski/python-face-client.git',
+      packages=['face'],
+      provides=['face'],
 
       classifiers=[
           'Development Status :: 4 - Beta',
