@@ -76,6 +76,7 @@ class FaceClient(object):
             data['detector'] = 'Aggressive'
 
         data['attributes'] = 'all'
+        self._baseData(data)
         return self._wrapSend('faces/detect', data)
 
     def facesStatus(self, uids, **kwargs):
@@ -84,18 +85,11 @@ class FaceClient(object):
 
         http://developers.face.com/docs/api/faces-status/
         """
-
-        addFacebookCred = True if self._hasFacebookCredentials() else False
-        addTwitterCred = True if self._hasTwitterCredentials() else False
-
         data = {'uids': uids}
-        
-        self._appendCredentials(data, addFacebookCred, addTwitterCred)
-        self._appendOptionalParams(data, **kwargs)
-
+        self._baseData(data, **kwargs)
         return self._wrapSend('faces/status', data)
 
-    def facesRecognize(self, uids, urls=None, file=None, **kwargs):
+    def facesRecognize(self, uids, urls=None, fileName=None, **kwargs):
         """
         Attempts to detect and recognize one or more user IDs' faces, in one
         or more photos.
@@ -106,23 +100,18 @@ class FaceClient(object):
 
         http://developers.face.com/docs/api/faces-recognize/
         """
-        addFacebookCred = True if self._hasFacebookCredentials() else False
-        addTwitterCred = True if self._hasTwitterCredentials() else False
-
         data = {'uids': uids, 'attributes': 'all'}
 
-        if file:
+        if fileName:
             # Check if the file exists
-            if not os.path.exists(file):
-                raise IOError('File %s does not exist' % (file))
+            if not os.path.exists(fileName):
+                raise IOError('File %s does not exist' % (fileName))
 
-            data.update({'file': file})
+            data.update({'file': fileName})
         else:
             data.update({'urls': urls})
 
-        self._appendCredentials(data, addFacebookCred, addTwitterCred)
-        self._appendOptionalParams(data, **kwargs)
-
+        self._baseData(data, **kwargs)
         return self._wrapSend('faces/recognize', data)
 
     def facesTrain(self, uids, **kwargs):
@@ -132,13 +121,8 @@ class FaceClient(object):
 
         http://developers.face.com/docs/api/faces-train/
         """
-        addFacebookCred = True if self._hasFacebookCredentials() else False
-        addTwitterCred = True if self._hasTwitterCredentials() else False
-
         data = {'uids': uids}
-        self._appendCredentials(data, addFacebookCred, addTwitterCred)
-        self._appendOptionalParams(data, callback_url="no-reply",**kwargs)
-
+        self._baseData(data, callback_url="no-reply", **kwargs)
         return self._wrapSend('faces/train', data)
 
     ### Methods for managing face tags ###
@@ -155,17 +139,12 @@ class FaceClient(object):
 
         http://developers.face.com/docs/api/tags-get/
         """
-        addFacebookCred = True if self._hasFacebookCredentials() else False
-        addTwitterCred = True if self._hasTwitterCredentials() else False
-
         data = {'uids': uids,
                 'urls': urls,
                 'together': together,
                 'limit': limit}
 
-        self._appendCredentials(data, addFacebookCred, addTwitterCred)
-        self._appendOptionalParams(data, **kwargs)
-        
+        self._baseData(data, **kwargs)
         return self._wrapSend('tags/get', data)
 
     def tagsAdd(self, url, x, y, width, uid,tagger_id, **kwargs):
@@ -175,18 +154,13 @@ class FaceClient(object):
 
         http://developers.face.com/docs/api/tags-add/
         """
-        addFacebookCred = True if self._hasFacebookCredentials() else False
-        addTwitterCred = True if self._hasTwitterCredentials() else False
-
         data = {'url': url,
                 'x': x,
                 'y': y,
                 'width': width,
                 'uid': uid,
                 'tagger_id': tagger_id}
-        
-        self._appendCredentials(data, addFacebookCred, addTwitterCred)
-        self._appendOptionalParams(data, **kwargs)
+        self._baseData(data, **kwargs)
         return self._wrapSend('tags/add', data)
 
     def tagsSave(self, tids, uid, **kwargs):
@@ -205,16 +179,10 @@ class FaceClient(object):
 
         http://developers.face.com/docs/api/tags-save/
         """
-        addFacebookCred = True if self._hasFacebookCredentials() else False
-        addTwitterCred = True if self._hasTwitterCredentials() else False
-        
         data = {'tids': tids,
                 'uid': uid }
         
-        self._appendCredentials(data, addFacebookCred, addTwitterCred)
-
-        self._appendOptionalParams(data, **kwargs)
-
+        self._baseData(data, **kwargs)
         return self._wrapSend('tags/save', data)
 
     def tagsRemove(self, tids, **kwargs):
@@ -226,10 +194,7 @@ class FaceClient(object):
         http://developers.face.com/docs/api/tags-remove/
         """
         data = {'tids': tids}
-        addFacebookCred = True if self._hasFacebookCredentials() else False
-        addTwitterCred = True if self._hasTwitterCredentials() else False
-        self._appendCredentials(data, addFacebookCred, addTwitterCred)
-        self._appendOptionalParams(data,**kwargs)
+        self._baseData(data, **kwargs)
         return self._wrapSend('tags/remove', data)
 
     ### Account management methods ###
@@ -252,6 +217,13 @@ class FaceClient(object):
         http://api.face.com/account/users.format
         """
         return self._wrapSend('account/users', {'namespaces': namespaces})
+
+    def _baseData(self, data, **kwargs):
+        """ adds standard parameters to data argument like twitter & 
+            facebook credentials plus any optional kwargs parameters.
+        """
+        self._appendCredentials(data, self._hasFacebookCredentials(), self._hasTwitterCredentials())
+        self._appendOptionalParams(data, **kwargs)
     
     def _wrapSend(self, method, data):
         logger.debug(self._formatOutput(method,data))
