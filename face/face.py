@@ -55,7 +55,7 @@ class FaceClient(object):
         """
         self._credentials["facebook"].update({'user': user,'token': token})
 
-    def facesDetect(self, urls=None, file=None, aggressive=False):
+    def facesDetect(self, urls=None, fileName=None, aggressive=False):
         """
         Returns tags for detected faces in one or more photos, with geometric
         information of the tag, eyes, nose and mouth, as well as the gender,
@@ -63,12 +63,12 @@ class FaceClient(object):
 
         http://developers.face.com/docs/api/faces-detect/
         """
-        if file:
+        if fileName:
             # Check if the file exists
-            if not os.path.exists(file):
-                raise IOError('File %s does not exist' % (file))
+            if not os.path.exists(fileName):
+                raise IOError('File %s does not exist' % (fileName))
 
-            data = {'file': file}
+            data = {'file': fileName}
         else:
             data = {'urls': urls}
 
