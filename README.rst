@@ -8,6 +8,9 @@ For a demonstration how to use this library, see EXAMPLE.RST.
 For more information about the API and the return values, visit the `official documentation`_.
 
 Performing actions involving Facebook or Twitter users
+
+Dependencies:
+poster - pip install poster [ http://pypi.python.org/pypi/poster/0.4 ]
 ======================================================
 
 If you want to perform actions involving Facebook or Twitter users you need to provide the necessary credentials.
