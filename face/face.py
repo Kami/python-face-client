@@ -35,7 +35,7 @@ class FaceClient(object):
         self._format = responseformat
 
         self._credentials = {"facebook": {}, "twitter": {}}
-        self._ssl = True
+        self._ssl = ssl
         self._apiurl = "api.face.com"
         
         self._formatInput = lambda m, r :"'{}' received response was '{}'".format(m,r)
