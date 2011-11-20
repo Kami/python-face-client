@@ -8,7 +8,7 @@ version_re = re.compile(
     r'__version__ = (\(.*?\))')
 
 cwd = os.path.dirname(os.path.abspath(__file__))
-fp = open(os.path.join(cwd, 'face', '__init__.py'))
+fp = open(os.path.join(cwd, 'face-client', '__init__.py'))
 
 version = None
 for line in fp:
@@ -28,8 +28,8 @@ setup(name='face',
       license='BSD',
       url='https://github.com/chris-piekarski/python-face-client',
       download_url='git://github.com/chris-piekarski/python-face-client.git',
-      packages=['face'],
-      provides=['face'],
+      packages=['face-client'],
+      provides=['face-client'],
 
       classifiers=[
           'Development Status :: 4 - Beta',
