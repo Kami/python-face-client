@@ -20,12 +20,12 @@ from poster.encode import multipart_encode
 from poster.streaminghttp import register_openers
 register_openers()
 
-logger = logging.getLogger("face")
-logger.setLevel(logging.DEBUG)
+logger = logging.getLogger("face_client")
+logger.setLevel(logging.WARNING)
 FORMAT = '[%(asctime)-15s][%(levelname)s][%(funcName)s] %(message)s'
 logging.basicConfig(format=FORMAT)
 
-def setLogLevel(level):
+def set_log_level(level):
     logger.setLevel(level)
 
 class FaceClient(object):
