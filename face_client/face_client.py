@@ -8,7 +8,7 @@
 #
 # Rewrite: Chris Piekarski (http://www.cpiekarski.com)
 # License: BSD
-
+""" Module for interfacing with face.com rest API """
 
 import urllib
 import urllib2
@@ -20,42 +20,63 @@ from poster.encode import multipart_encode
 from poster.streaminghttp import register_openers
 register_openers()
 
-logger = logging.getLogger("face_client")
-logger.setLevel(logging.WARNING)
+LOGGER_FACE = logging.getLogger("face_client")
+LOGGER_FACE.setLevel(logging.WARNING)
 FORMAT = '[%(asctime)-15s][%(levelname)s][%(funcName)s] %(message)s'
 logging.basicConfig(format=FORMAT)
 
+COMMA_OUTPUT = (lambda d : 
+                      unicode(",".join(
+                      ["{}:{}".format(k, v) for k,v in d.iteritems()])))
+
+GET_USER_IDS = (lambda uids, domain:
+                [uid for uid in uids.split(',') if uid.find(domain) != -1])
+
+GET_FACEBOOK_USER_IDS = (lambda uids:
+                         GET_USER_IDS(uids,'@facebook.com'))
+
+GET_TWITTER_USER_IDS = (lambda uids:
+                         GET_USER_IDS(uids,'@twitter.com'))
+
 def set_log_level(level):
-    logger.setLevel(level)
+    """ sets the module logging level """
+    LOGGER_FACE.setLevel(level)
 
 class FaceClient(object):
-    def __init__(self, apiKey, apiSecret, responseformat='json', ssl=True):
-        self._key = apiKey
-        self._secret = apiSecret
-        self._format = responseformat
+    """ This is the main interface class. Its methods represent the 
+        current face.com API and the encapsulated data is the facebook
+        and twitter credentials information
+    """
+    def __init__(self, api_key, api_secret, response_format='json', ssl=True):
+        """ api_key: face.com provided api key
+            api_secret: face.com provided api secret
+            response_format: json | xml
+            ssl: True | False
+        """
+        self._key = api_key
+        self._secret = api_secret
+        self._format = response_format
 
         self._credentials = {"facebook": {}, "twitter": {}}
         self._ssl = ssl
         self._apiurl = "api.face.com"
-        
-        self._formatInput = lambda m, r :"'{}' received response was '{}'".format(m,r)
-        self._formatOutput = lambda m, d : "'{}' sending {}'".format(m,d)
-        self._commaOutput = lambda d : unicode(",".join(["{}:{}".format(k,v) for k,v in d.iteritems()]))
 
-    def twitterCredentials(self, user, secret,token):
+    def set_twitter_oauth_credentials(self, user, secret, token):
         """ user - twitter user id
             secret - twitter oauth secret
             token - twitter oauth token
         """
-        self._credentials["twitter"].update({'user': user,'secret': secret, 'token': token})
+        self._credentials["twitter"].update({'user': user,
+                                             'secret': secret, 
+                                             'token': token})
 
-    def facebookCredentials(self, user, token):
+    def set_facebook_oauth_credentials(self, user, token):
         """ user - facebook user id
             token - facebook oauth2 token
         """
-        self._credentials["facebook"].update({'user': user,'token': token})
+        self._credentials["facebook"].update({'user': user, 'token': token})
 
-    def facesDetect(self, urls=None, fileName=None, aggressive=False):
+    def faces_detect(self, urls=None, file_name=None, aggressive=False):
         """
         Returns tags for detected faces in one or more photos, with geometric
         information of the tag, eyes, nose and mouth, as well as the gender,
@@ -63,12 +84,12 @@ class FaceClient(object):
 
         http://developers.face.com/docs/api/faces-detect/
         """
-        if fileName:
+        if file_name:
             # Check if the file exists
-            if not os.path.exists(fileName):
-                raise IOError('File %s does not exist' % (fileName))
+            if not os.path.exists(file_name):
+                raise IOError('File %s does not exist' % (file_name))
 
-            data = {'file': fileName}
+            data = {'file': file_name}
         else:
             data = {'urls': urls}
 
@@ -76,20 +97,20 @@ class FaceClient(object):
             data['detector'] = 'Aggressive'
 
         data['attributes'] = 'all'
-        self._baseData(data)
-        return self._wrapSend('faces/detect', data)
+        self._base_data(data)
+        return self._wrap_send('faces/detect', data)
 
-    def facesStatus(self, uids, **kwargs):
+    def faces_status(self, uids, **kwargs):
         """
         Reports training set status for the specified UIDs.
 
         http://developers.face.com/docs/api/faces-status/
         """
         data = {'uids': uids}
-        self._baseData(data, **kwargs)
-        return self._wrapSend('faces/status', data)
+        self._base_data(data, **kwargs)
+        return self._wrap_send('faces/status', data)
 
-    def facesRecognize(self, uids, urls=None, fileName=None, **kwargs):
+    def faces_recognize(self, uids, urls=None, file_name=None, **kwargs):
         """
         Attempts to detect and recognize one or more user IDs' faces, in one
         or more photos.
@@ -102,19 +123,19 @@ class FaceClient(object):
         """
         data = {'uids': uids, 'attributes': 'all'}
 
-        if fileName:
+        if file_name:
             # Check if the file exists
-            if not os.path.exists(fileName):
-                raise IOError('File %s does not exist' % (fileName))
+            if not os.path.exists(file_name):
+                raise IOError('File %s does not exist' % (file_name))
 
-            data.update({'file': fileName})
+            data.update({'file': file_name})
         else:
             data.update({'urls': urls})
 
-        self._baseData(data, **kwargs)
-        return self._wrapSend('faces/recognize', data)
+        self._base_data(data, **kwargs)
+        return self._wrap_send('faces/recognize', data)
 
-    def facesTrain(self, uids, **kwargs):
+    def faces_train(self, uids, **kwargs):
         """
         Calls the training procedure for the specified UIDs, and reports back
         changes.
@@ -122,11 +143,12 @@ class FaceClient(object):
         http://developers.face.com/docs/api/faces-train/
         """
         data = {'uids': uids}
-        self._baseData(data, callback_url="no-reply", **kwargs)
-        return self._wrapSend('faces/train', data)
+        self._base_data(data, callback_url="no-reply", **kwargs)
+        return self._wrap_send('faces/train', data)
 
     ### Methods for managing face tags ###
-    def tagsGet(self, uids=None, urls=None, order='recent',limit=5, together=False, **kwargs):
+    def tags_get(self, uids=None, urls=None, 
+                 limit=5, together=False, **kwargs):
         """
         Returns saved tags in one or more photos, or for the specified
         User ID(s).
@@ -144,10 +166,10 @@ class FaceClient(object):
                 'together': together,
                 'limit': limit}
 
-        self._baseData(data, **kwargs)
-        return self._wrapSend('tags/get', data)
+        self._base_data(data, **kwargs)
+        return self._wrap_send('tags/get', data)
 
-    def tagsAdd(self, url, x, y, width, uid,tagger_id, **kwargs):
+    def tags_add(self, url, face_x, face_y, width, uid, tagger_id, **kwargs):
         """
         Add a (manual) face tag to a photo. Use this method to add face tags
         where those were not detected for completeness of your service.
@@ -155,15 +177,15 @@ class FaceClient(object):
         http://developers.face.com/docs/api/tags-add/
         """
         data = {'url': url,
-                'x': x,
-                'y': y,
+                'x': face_x,
+                'y': face_y,
                 'width': width,
                 'uid': uid,
                 'tagger_id': tagger_id}
-        self._baseData(data, **kwargs)
-        return self._wrapSend('tags/add', data)
+        self._base_data(data, **kwargs)
+        return self._wrap_send('tags/add', data)
 
-    def tagsSave(self, tids, uid, **kwargs):
+    def tags_save(self, tids, uid, **kwargs):
         """
         Saves a face tag. Use this method to save tags for training the
         face.com index, or for future use of the faces.detect and tags.get
@@ -182,10 +204,10 @@ class FaceClient(object):
         data = {'tids': tids,
                 'uid': uid }
         
-        self._baseData(data, **kwargs)
-        return self._wrapSend('tags/save', data)
+        self._base_data(data, **kwargs)
+        return self._wrap_send('tags/save', data)
 
-    def tagsRemove(self, tids, **kwargs):
+    def tags_remove(self, tids, **kwargs):
         """
         Remove a previously saved face tag from a photo.
 
@@ -194,20 +216,20 @@ class FaceClient(object):
         http://developers.face.com/docs/api/tags-remove/
         """
         data = {'tids': tids}
-        self._baseData(data, **kwargs)
-        return self._wrapSend('tags/remove', data)
+        self._base_data(data, **kwargs)
+        return self._wrap_send('tags/remove', data)
 
     ### Account management methods ###
-    def accountLimits(self):
+    def account_limits(self):
         """
         Returns current rate limits for the account represented by the passed
         API key and Secret.
 
         http://developers.face.com/docs/api/account-limits/
         """
-        return self._wrapSend('account/limits', {})
+        return self._wrap_send('account/limits', {})
 
-    def accountUsers(self, namespaces):
+    def account_users(self, namespaces):
         """
         Returns current rate limits for the account represented by the passed
         API key and Secret.
@@ -216,69 +238,73 @@ class FaceClient(object):
 
         http://api.face.com/account/users.format
         """
-        return self._wrapSend('account/users', {'namespaces': namespaces})
+        return self._wrap_send('account/users', {'namespaces': namespaces})
 
-    def _baseData(self, data, **kwargs):
+    def _base_data(self, data, **kwargs):
         """ adds standard parameters to data argument like twitter & 
             facebook credentials plus any optional kwargs parameters.
         """
-        self._appendCredentials(data, self._hasFacebookCredentials(), self._hasTwitterCredentials())
-        self._appendOptionalParams(data, **kwargs)
+        self._append_credentials(data, self._has_facebook_credentials(), 
+                                 self._has_twitter_credentials())
+        self._append_optional_params(data, **kwargs)
     
-    def _wrapSend(self, method, data):
-        logger.debug(self._formatOutput(method,data))
-        response = self._sendRequest(method, data)
-        logger.debug(self._formatInput(method,response))
+    def _wrap_send(self, method, data):
+        """ logs request and response data from face.com API """
+        LOGGER_FACE.debug("'{}' sending {}'".format(method, data))
+        response = self._send_request(method, data)
+        LOGGER_FACE.debug("'{}' received response was '{}'".format(method, 
+                                                                   response))
         return response
     
-    def _hasFacebookCredentials(self):
+    def _has_facebook_credentials(self):
+        """ returns True if client has facebook oauth creds """
         return True if len(self._credentials["facebook"]) else False
     
-    def _hasTwitterCredentials(self):
+    def _has_twitter_credentials(self):
+        """ returns True if client has twitter oauth creds """
         return True if len(self._credentials["twitter"]) else False
 
-    def _getUserIDs(self, uids, domain):
-        return [uid for uid in uids.split(',') if uid.find(domain) != -1]
-
-    def _getFacebookUserIDs(self, uids):
-        return self._getUserIDs(uids,'@facebook.com')
+    def _get_facebook_credentials(self):
+        """ returns encapsulated facebook oauth creds if present """
+        f_b = {}
+        if self._has_facebook_credentials():
+            f_b["fb_user"] = self._credentials["facebook"]["user"]
+            f_b["fb_oauth_token"] = self._credentials["facebook"]["token"]
+        return f_b
     
-    def _getTwitterUserIDs(self, uids):
-        return self._getUserIDs(uids,'@twitter.com')
-
-    def _getFacebookCredentials(self):
-        fb = {}
-        if self._hasFacebookCredentials():
-            fb["fb_user"] = self._credentials["facebook"]["user"]
-            fb["fb_oauth_token"] = self._credentials["facebook"]["token"]
-        return fb
+    def _get_twitter_credentials(self):
+        """ returns encapsulated twitter oauth creds if present """
+        t_w = {}
+        if self._has_twitter_credentials():
+            t_w["twitter_oauth_user"] = self._credentials["twitter"]["user"]
+            t_w["twitter_oauth_secret"] = self._credentials["twitter"]["secret"]
+            t_w["twitter_oauth_token"] = self._credentials["twitter"]["token"]
+        return t_w
     
-    def _getTwitterCredentials(self):
-        tweet = {}
-        if self._hasTwitterCredentials():
-            tweet["twitter_oauth_user"] = self._credentials["twitter"]["user"]
-            tweet["twitter_oauth_secret"] = self._credentials["twitter"]["secret"]
-            tweet["twitter_oauth_token"] = self._credentials["twitter"]["token"]
-        return tweet
-    
-    def _addFacebookCredentials(self, data):
-        data.update({"user_auth":self._commaOutput(self._getFacebookCredentials())})
+    def _add_facebook_credentials(self, data):
+        """ appends facebook creds to the data dictionary """
+        data.update({"user_auth":
+                     COMMA_OUTPUT(self._get_facebook_credentials())})
               
-    def _addTwitterCredentials(self, data):
-        data.update({"user_auth":self._commaOutput(self._getTwitterCredentials())})
+    def _add_twitter_credentials(self, data):
+        """ appends twitter creds to the data dictionary """
+        data.update({"user_auth":
+                     COMMA_OUTPUT(self._get_twitter_credentials())})
         
-    def _appendCredentials(self, data, facebook=True, twitter=True):
+    def _append_credentials(self, data, facebook=True, twitter=True):
+        """ adds either facebook or twitter oauth creds to the data package """
         if facebook:
-            self._addFacebookCredentials(data)
+            self._add_facebook_credentials(data)
         if twitter:
-            self._addTwitterCredentials(data)
+            self._add_twitter_credentials(data)
 
-    def _appendOptionalParams(self, data, **kwargs):
+    def _append_optional_params(self, data, **kwargs):
+        """ adds optional kwargs to data paramater """ 
         for key, value in kwargs.iteritems():
             if value:
                 data.update({key: value})
 
-    def _sendRequest(self, method=None, parameters=None):
+    def _send_request(self, method=None, parameters=None):
         """ method - api method to call
             parameters - optional data parameters for method call
         """
@@ -287,7 +313,7 @@ class FaceClient(object):
         else:
             protocol = 'http://'
 
-        url = '%s%s/%s.%s' % (protocol, self._apiurl, method,self._format)
+        url = '%s%s/%s.%s' % (protocol, self._apiurl, method, self._format)
 
         data = {'api_key': self._key,
                 'api_secret': self._secret,
@@ -298,8 +324,8 @@ class FaceClient(object):
 
         # Local file is provided, use multi-part form
         if 'file' in data:
-            fileName = data['file']
-            data['file'] = open(fileName, "rb")
+            file_name = data['file']
+            data['file'] = open(file_name, "rb")
             datagen, headers = multipart_encode(data)
         else:
             datagen = urllib.urlencode(data)
@@ -314,12 +340,14 @@ class FaceClient(object):
             response_data['status'] == 'failure':
             raise FaceError(response_data['error_code'],
                             response_data['error_message'])
-
         return response_data
 
 
 class FaceError(Exception):
-    def __init__(self, error_code, error_message):
+    """ Basic exception wrapper class """
+    def __init__(self, error_code, error_message, **kwargs):
+        """ code & message """
+        super(FaceError, self).__init__(**kwargs)
         self.error_code = error_code
         self.error_message = error_message
 
