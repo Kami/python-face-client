@@ -24,7 +24,7 @@ http://farm1.static.flickr.com/41/104498903_bad315cee0.jpg
 
 #. Before training our namespace index I just want to show you that the image is not already recognized::
 
-    >> client.facesRecognize('guido', 'http://farm1.static.flickr.com/41/104498903_bad315cee0.jpg', namespace = 'testns')
+    >> client.faces_recognize('guido', 'http://farm1.static.flickr.com/41/104498903_bad315cee0.jpg', namespace = 'testns')
 
     {u'no_training_set': [u'guido@testns'],
     u'photos': [{u'height': 375,
@@ -56,7 +56,7 @@ http://farm1.static.flickr.com/41/104498903_bad315cee0.jpg
 
    We can also check that the tags were saved by using the **tags_get** method::
 
-    >> client.tagsGet('guido@testns')
+    >> client.tags_get('guido@testns')
 
     {u'message': u'Tags saved with uid: guido@testns ,label: Guido Van Rossum',
      u'saved_tags': [{u'detected_tid': u'TEMP_F@cc96b0429a7946711de5693c5ff67c46_cf224a584e80672ea7fa15a936ed1367_47.00_27.83_0',
@@ -69,8 +69,8 @@ http://farm1.static.flickr.com/41/104498903_bad315cee0.jpg
 
 #. Now when we have the temporary tag ids, we can use them save to save the tags and train our namespace index::
 
-    >> client.tagsSave(tids = ',' . join(tids), uid = 'guido@testns', label = 'Guido Van Rossum')
-    >> client.facesTrain('guido@testns')
+    >> client.tags_save(tids = ',' . join(tids), uid = 'guido@testns', label = 'Guido Van Rossum')
+    >> client.faces_train('guido@testns')
 
     {u'status': u'success',
     u'unchanged': [{u'last_trained': 1274462404,
@@ -80,7 +80,7 @@ http://farm1.static.flickr.com/41/104498903_bad315cee0.jpg
 
 #. Now after we have trained our index, lets check if Guido is recognized::
 
-    >> client.facesRecognize('all', 'http://farm1.static.flickr.com/41/104498903_bad315cee0.jpg', namespace = 'testns')
+    >> client.faces_recognize('all', 'http://farm1.static.flickr.com/41/104498903_bad315cee0.jpg', namespace = 'testns')
 
     {u'photos': [{u'height': 375,
               u'pid': u'F@2981c22e78cc0f12276825aa0b05df86_cf224a584e80672ea7fa15a936ed1367',
