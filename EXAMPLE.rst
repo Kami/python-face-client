@@ -19,7 +19,7 @@ http://farm1.static.flickr.com/41/104498903_bad315cee0.jpg
 
 #. Now we import the module and instantiate the class with our face.com **api_key** and **api_secret** (you can get them by registering your application on `face.com page`_)::
 
-    >> import face
+    >> import face_client
     >> client = face.FaceClient('API_KEY', 'API_SECRET')
 
 #. Before training our namespace index I just want to show you that the image is not already recognized::
