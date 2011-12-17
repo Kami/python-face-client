@@ -9,10 +9,13 @@
 # Author: Tomaž Muraus (http://www.tomaz.me)
 # License: BSD
 
+import os
 import urllib
 import urllib2
 import os.path
 import warnings
+
+from utils import get_random_string
 
 try:
     import json
@@ -347,13 +350,12 @@ class FaceClient(object):
             for key, value in data.iteritems():
                 form.field(key, value)
 
-            for key, value in files:
+            for value in files:
                 if hasattr(value, 'read'):
                     if hasattr(value, 'name'):
                         name = os.path.basename(value.name)
                     else:
-                        import tempfile
-                        name = tempfile.mktemp(prefix='', dir='')
+                        name = get_random_string(10)
                     close_file = False
                     file = value
                 else:
