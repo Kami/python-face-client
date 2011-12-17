@@ -9,7 +9,6 @@
 # Author: Tomaž Muraus (http://www.tomaz.me)
 # License: BSD
 
-import os
 import urllib
 import urllib2
 import os.path
