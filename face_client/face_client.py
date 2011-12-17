@@ -9,8 +9,6 @@
 # Author: Tomaž Muraus (http://www.tomaz.me)
 # License: BSD
 
-from __future__ import with_statement
-
 import urllib
 import urllib2
 import os.path
@@ -80,21 +78,22 @@ class FaceClient(object):
         if not urls and not file:
             raise AttributeError('Missing URLs/filename argument')
 
+        data = {'attributes': 'all'}
+        files = []
+
         if file:
             # Check if the file exists
-            if not os.path.exists(file):
+            if not hasattr(file, 'read') and not os.path.exists(file):
                 raise IOError('File %s does not exist' % (file))
 
-            data = {'file': file}
+            files.append(file)
         else:
-            data = {'urls': urls}
+            data['urls'] = urls
 
         if aggressive:
             data['detector'] = 'Aggressive'
 
-        data['attributes'] = 'all'
-
-        response = self.send_request('faces/detect', data)
+        response = self.send_request('faces/detect', data, files)
         return response
 
     def faces_status(self, uids=None, namespace=None):
@@ -135,13 +134,14 @@ class FaceClient(object):
                 self.__check_user_auth_credentials(uids)
 
         data = {'uids': uids, 'attributes': 'all'}
+        files = []
 
         if file:
             # Check if the file exists
-            if not os.path.exists(file):
+            if not hasattr(file, 'read') and not os.path.exists(file):
                 raise IOError('File %s does not exist' % (file))
 
-            data.update({'file': file})
+            files.append(file)
         else:
             data.update({'urls': urls})
 
@@ -149,7 +149,7 @@ class FaceClient(object):
         self.__append_optional_arguments(data, train=train,
                                          namespace=namespace)
 
-        response = self.send_request('faces/recognize', data)
+        response = self.send_request('faces/recognize', data, files)
         return response
 
     def faces_train(self, uids=None, namespace=None):
@@ -324,7 +324,7 @@ class FaceClient(object):
             if value:
                 data.update({key: value})
 
-    def send_request(self, method=None, parameters=None):
+    def send_request(self, method=None, parameters=None, files=None):
         if USE_SSL:
             protocol = 'https://'
         else:
@@ -340,18 +340,32 @@ class FaceClient(object):
             data.update(parameters)
 
         # Local file is provided, use multi-part form
-        if parameters and 'file' in parameters:
+        if files:
             from multipart import Multipart
             form = Multipart()
 
             for key, value in data.iteritems():
+                form.field(key, value)
 
-                if key == 'file':
-                    with open(value, 'r') as file:
-                        form.file(os.path.basename(key), os.path.basename(key),
-                                  file.read())
+            for key, value in files:
+                if hasattr(value, 'read'):
+                    if hasattr(value, 'name'):
+                        name = os.path.basename(value.name)
+                    else:
+                        import tempfile
+                        name = tempfile.mktemp(prefix='', dir='')
+                    close_file = False
+                    file = value
                 else:
-                    form.field(key, value)
+                    name = os.path.basename(value)
+                    close_file = True
+                    file = open(value, 'r')
+
+                try:
+                    form.file(name, name, file.read())
+                finally:
+                    if close_file:
+                        file.close()
 
             (content_type, post_data) = form.get()
             headers = {'Content-Type': content_type}
