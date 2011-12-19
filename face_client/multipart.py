@@ -74,7 +74,7 @@ class Part(object):
         lines = []
         lines.append('--' + Part.BOUNDARY)
         for (key, val) in self._headers.items():
-            lines.append('%s: %s' % (key, val))
+            lines.append(str('%s: %s' % (key, val)))
         lines.append('')
         lines.append(self._body)
         return lines
