@@ -14,8 +14,6 @@ import urllib2
 import os.path
 import warnings
 
-from utils import get_random_string
-
 try:
     import json
 except ImportError:
@@ -349,18 +347,17 @@ class FaceClient(object):
             for key, value in data.iteritems():
                 form.field(key, value)
 
-            for value in files:
-                if hasattr(value, 'read'):
-                    if hasattr(value, 'name'):
-                        name = os.path.basename(value.name)
+            for i, file in enumerate(files, 1):
+                if hasattr(file, 'read'):
+                    if hasattr(file, 'name'):
+                        name = os.path.basename(file.name)
                     else:
-                        name = get_random_string(10)
+                        name = 'attachment_%d' % i
                     close_file = False
-                    file = value
                 else:
-                    name = os.path.basename(value)
+                    name = os.path.basename(file)
+                    file = open(file, 'r')
                     close_file = True
-                    file = open(value, 'r')
 
                 try:
                     form.file(name, name, file.read())
