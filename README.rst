@@ -1,7 +1,7 @@
-face.com Python API client library
-==================================
+SkyBiometry Face Detection and Recognition API client library
+=============================================================
 
-face.com_ REST API Python client library.
+SkyBiometry Face Detection and Recognition REST API client library.
 
 For a demonstration how to use this library, see EXAMPLE.RST.
 
@@ -20,5 +20,4 @@ If you want to perform actions involving Facebook or Twitter users you need to p
 
     client.set_twitter_oauth_credentials('OAUTH_USER', 'OAUTH_SECRET', 'OAUTH_TOKEN')
 
-.. _face.com: http://developers.face.com/
-.. _official documentation: http://developers.face.com/docs/api/
+.. _official documentation: http://www.skybiometry.com/Documentation

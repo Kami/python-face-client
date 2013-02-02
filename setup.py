@@ -22,7 +22,7 @@ fp.close()
 
 setup(name='face_client',
       version='.' . join(map(str, version)),
-      description='face.com face recognition Python API client library',
+      description='SkyBiometry Face Detection and Recognition API Python client library',
       author='Tomaž Muraus',
       author_email='tomaz@tomaz.me',
       license='BSD',

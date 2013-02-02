@@ -17,7 +17,7 @@ http://farm1.static.flickr.com/41/104498903_bad315cee0.jpg
 
 #. First we create our private namespace named **testns** (this can be done on the `face.com page`_)
 
-#. Now we import the module and instantiate the class with our face.com **api_key** and **api_secret** (you can get them by registering your application on `face.com page`_)::
+#. Now we import the module and instantiate the class with our SkyBiometry **api_key** and **api_secret** (you can get them by registering your application on `face.com page`_)::
 
     >> from face_client import FaceClient
     >> client = FaceClient('API_KEY', 'API_SECRET')
@@ -102,5 +102,5 @@ http://farm1.static.flickr.com/41/104498903_bad315cee0.jpg
 
 For more information about the face.com API and how to use it with Facebook and Twitter, visit the `official documentation`_.
 
-.. _face.com page: http://developers.face.com/account/
-.. _official documentation: http://developers.face.com/docs/recognition-howto/
+.. _face.com page: http://www.skybiometry.com/Account
+.. _official documentation: http://www.skybiometry.com/Documentation

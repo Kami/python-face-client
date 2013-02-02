@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
-# Name: SkyBiometry Face Detection And Recognition API Python client library
-# Description: SkyBiometry Face Detection And Recognition REST API Python client library.
+# Name: SkyBiometry Face Detection and Recognition API Python client library
+# Description: SkyBiometry Face Detection and Recognition REST API Python client library.
 #
 # For more information about the API and the return values,
 # visit the official documentation at http://www.skybiometry.com/Documentation
