@@ -15,9 +15,9 @@ And here is the image which hopefully, after training our index will be recogniz
 
 http://farm1.static.flickr.com/41/104498903_bad315cee0.jpg
 
-#. First we create our private namespace named **testns** (this can be done on the `face.com page`_)
+#. First we create our private namespace named **testns** (this can be done on the `SkyBiometry page`_)
 
-#. Now we import the module and instantiate the class with our SkyBiometry **api_key** and **api_secret** (you can get them by registering your application on `face.com page`_)::
+#. Now we import the module and instantiate the class with our SkyBiometry **api_key** and **api_secret** (you can get them by registering your application on `SkyBiometry page`_)::
 
     >> from face_client import FaceClient
     >> client = FaceClient('API_KEY', 'API_SECRET')
@@ -100,7 +100,7 @@ http://farm1.static.flickr.com/41/104498903_bad315cee0.jpg
 
    As you can see by looking at the uids key, Guido was now recognized with a 20% confidence!
 
-For more information about the face.com API and how to use it with Facebook and Twitter, visit the `official documentation`_.
+For more information about the SkyBiometry Face Detection and Recognition API and how to use it with Facebook and Twitter, visit the `official documentation`_.
 
-.. _face.com page: http://www.skybiometry.com/Account
+.. _SkyBiometry page: http://www.skybiometry.com/Account
 .. _official documentation: http://www.skybiometry.com/Documentation
