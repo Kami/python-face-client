@@ -5,8 +5,8 @@ SkyBiometry Face Detection and Recognition REST API client library.
 
 For more information about the API and the return values, visit the `official documentation`_.
 
-EXAMPLE
-=======
+Example
+-------
 
 Here is a short example demonstrating how you can use this client.
 
@@ -24,27 +24,57 @@ http://farm1.static.flickr.com/41/104498903_bad315cee0.jpg
 
 #. First we create our private namespace named **testns** (this can be done on the `SkyBiometry page`_)
 
-#. Now we import the module and instantiate the class with our SkyBiometry **api_key** and **api_secret** (you can get them by registering your application on `SkyBiometry page`_)::
+#. Now we import the module and instantiate the class with our SkyBiometry **API_KEY** and **API_SECRET** (you can get them by registering your application on `SkyBiometry page`_)::
 
-    >> from face_client import FaceClient
-    >> client = FaceClient('API_KEY', 'API_SECRET')
+	>> from face_client import FaceClient
+	>> client = FaceClient('API_KEY', 'API_SECRET')
 
 #. Before training our namespace index I just want to show you that the image is not already recognized::
 
-    >> client.faces_recognize('guido', 'http://farm1.static.flickr.com/41/104498903_bad315cee0.jpg', namespace = 'testns')
+	>> client.faces_recognize('guido', 'http://farm1.static.flickr.com/41/104498903_bad315cee0.jpg', namespace = 'testns')
 
-    {u'no_training_set': [u'guido@testns'],
-    u'photos': [{u'height': 375,
-                         ...omitted for clarity...
-                         u'tid': u'TEMP_F@51b67ae268617da2c99c69091ab8f3b0_cf224a584e806722a7fa15a936ed1367_48.00_41.82_0',
-                         u'uids': [],
-                         u'width': 47,
-                         u'yaw': 31.649999999999999}],
-                  u'url': u'http://farm1.static.flickr.com/41/104498903_bad315cee0.jpg',
-                  u'width': 500}],
-                         ...omitted for clarity...
+	{
+		u'status': u'success',
+		u'photos': [{
+			u'url': u'http://farm1.static.flickr.com/41/104498903_bad315cee0.jpg',
+			u'width': 500,
+			u'tags': [{
+				u'eye_left': {u'y': 31.2, u'x': 55.6},
+				u'confirmed': False,
+				u'uids': [],
+				u'yaw': -45,
+				u'manual': False,
+				u'height': 18.13,
+				u'width': 13.6,
+				u'mouth_center': {u'y': 43.47, u'x': 52.6},
+				u'nose': {u'y': 36.53, u'x': 53.4},
+				u'eye_right': {u'y': 30.93, u'x': 48.0},
+				u'pitch': 0,
+				u'tid': u'TEMP_F@08e31221350a43d267be01d500f10086_1d12ece6a6ea2_48.20_35.73_0_1',
+				u'attributes': {
+					u'gender': {u'confidence': 47, u'value': u'male'},
+					u'smiling': {u'confidence': 85, u'value': u'false'},
+					u'glasses': {u'confidence': 27, u'value': u'false'},
+					u'dark_glasses': {u'confidence': 89, u'value': u'false'},
+					u'face': {u'confidence': 71, u'value': u'true'}
+				},
+				u'recognizable': True,
+				u'roll': 3,
+				u'center': {u'y': 35.73, u'x': 48.2}
+			}],
+			u'pid': u'F@08e31221350a43d267be01d572dc824b_1d12ece6a6ea2',
+			u'height': 375
+		}],
+		u'usage': {
+			u'reset_time_text': u'Sat, 23 February 2013 19:38:28 +0000',
+			u'used': 1,
+			u'limit': 10000,
+			u'remaining': 9999,
+			u'reset_time': 1361648308
+		}
+	}
 
-   As you can see, the "uids" list is empty, meaning that Guido Van Rossum is not yet recognized in our **testns** namespace.
+	As you can see, the "uids" list is empty, meaning that Guido Van Rossum is not yet recognized in our **testns** namespace.
 
 #. Saving the tags and training our index
 
@@ -107,7 +137,7 @@ http://farm1.static.flickr.com/41/104498903_bad315cee0.jpg
 
    As you can see by looking at the uids key, Guido was now recognized with a 20% confidence!
 
-For more information about the SkyBiometry Face Detection and Recognition API and how to use it with Facebook and Twitter, visit the `official documentation`_.
+For more information about the SkyBiometry Face Detection and Recognition API and how to use it, visit the `official documentation`_.
 
 .. _SkyBiometry page: http://www.skybiometry.com/Account
 .. _official documentation: http://www.skybiometry.com/Documentation
