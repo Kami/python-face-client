@@ -179,14 +179,13 @@ class FaceClient(object):
 
 		http://developers.face.com/docs/api/tags-get/
 		"""
+		if not uids and not urls:
+			raise AttributeError('Missing user IDs or URLs')
 		(facebook_uids, twitter_uids) = self.__check_user_auth_credentials(uids)
 
-		data = {'uids': uids,
-				'urls': urls,
-				'together': together,
-				'limit': limit}
+		data = { 'together': 'true' if together else 'false', 'limit': limit }
 		self.__append_user_auth_data(data, facebook_uids, twitter_uids)
-		self.__append_optional_arguments(data, pids=pids, filter=filter, namespace=namespace)
+		self.__append_optional_arguments(data, uids=uids, urls=urls, pids=pids, filter=filter, namespace=namespace)
 
 		response = self.send_request('tags/get', data)
 		return response
@@ -356,6 +355,8 @@ class FaceClient(object):
 		else:
 			post_data = urllib.urlencode(data)
 			headers = {}
+
+		print post_data
 
 		request = urllib2.Request(url, headers=headers, data=post_data)
 		response = urllib2.urlopen(request)
