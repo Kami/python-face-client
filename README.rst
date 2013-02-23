@@ -68,13 +68,11 @@ http://farm1.static.flickr.com/41/104498903_bad315cee0.jpg
 		u'usage': {...omitted for clarity...}
 	}
 
-As you can see, the "uids" list is empty, meaning that Guido Van Rossum is not yet recognized in our **testns** namespace.
+   As you can see, the "uids" list is empty, meaning that Guido Van Rossum is not yet recognized in our **testns** namespace.
 
-#. Saving the tags and training our index
+#. Saving the tags and training our index::
 
-	For saving the tags, we need to provide the **tags_save** method with the tag ids, which we can obtain by using the **faces_detect** or **faces_recognize** method.
-
-	In this example, I will use faces_detect::
+   For saving the tags, we need to provide the **tags_save** method with the tag ids, which we can obtain by using the **faces_detect** or **faces_recognize** method. In this example, I will use faces_detect.
 
 	>> response = client.faces_detect('http://savasplace.com/wp-content/uploads/2009/04/guido-van-rossum.jpg,http://farm1.static.flickr.com/43/104506247_c748f20b83.jpg,http://farm1.static.flickr.com/67/200126290_2798330e61.jpg')
 	>> tids = [photo['tags'][0]['tid'] for photo in response['photos']]
@@ -166,7 +164,7 @@ As you can see, the "uids" list is empty, meaning that Guido Van Rossum is not y
 		u'usage': {...omitted for clarity...}
 	}
 
-As you can see by looking at the "uids" list, Guido was now recognized with a 34% confidence!
+   As you can see by looking at the "uids" list, Guido was now recognized with a 34% confidence!
 
 For more information about the SkyBiometry Face Detection and Recognition API and how to use it, visit the `official documentation`_.
 
