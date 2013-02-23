@@ -22,7 +22,7 @@ And here is the image which hopefully, after training our index will be recogniz
 
 http://farm1.static.flickr.com/41/104498903_bad315cee0.jpg
 
-#. First we create our private namespace named **testns** (this can be done on the `SkyBiometry page`_)
+#. First we create our private namespace named **testns** (this can be done on the `SkyBiometry page`_).
 
 #. Now we import the module and instantiate the class with our SkyBiometry **API_KEY** and **API_SECRET** (you can get them by registering your application on `SkyBiometry page`_)::
 
