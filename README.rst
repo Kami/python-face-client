@@ -41,7 +41,7 @@ http://farm1.static.flickr.com/41/104498903_bad315cee0.jpg
 			u'tags': [{
 				u'eye_left': {u'y': 31.2, u'x': 55.6},
 				u'confirmed': False,
-				u'uids': [],
+				**u'uids': [],**
 				u'yaw': -45,
 				u'manual': False,
 				u'height': 18.13,
