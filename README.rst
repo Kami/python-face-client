@@ -68,7 +68,7 @@ http://farm1.static.flickr.com/41/104498903_bad315cee0.jpg
 		u'usage': {...omitted for clarity...}
 	}
 
-	As you can see, the "uids" list is empty, meaning that Guido Van Rossum is not yet recognized in our **testns** namespace.
+As you can see, the "uids" list is empty, meaning that Guido Van Rossum is not yet recognized in our **testns** namespace.
 
 #. Saving the tags and training our index
 
@@ -92,7 +92,7 @@ http://farm1.static.flickr.com/41/104498903_bad315cee0.jpg
 
 	{
 		u'status': u'success',
-		u'message': u'Tags saved with uid: guido@tag, label: Guido Van Rossum',
+		u'message': u'Tags saved with uid: guido@testns, label: Guido Van Rossum',
 		u'saved_tags': [
 			{u'tid': u'00bc00ab_15e78870a332a', u'detected_tid': u'TEMP_F@0bf0294f6c43162105c9bdfa00bc00ab_15e78870a332a_47.00_28.50_0_1'},
 			{u'tid': u'01000084_e29f2ba8f58c6', u'detected_tid': u'TEMP_F@008f7f3d4f93956f2fd24b1e01000084_e29f2ba8f58c6_51.20_35.20_0_1'},
@@ -107,7 +107,7 @@ http://farm1.static.flickr.com/41/104498903_bad315cee0.jpg
 		u'created': [{
 			u'training_set_size': 3,
 			u'last_trained': 1361651583,
-			u'uid': u'guido@tag',
+			u'uid': u'guido@testns',
 			u'training_in_progress': False}
 		]
 	}
@@ -138,7 +138,7 @@ http://farm1.static.flickr.com/41/104498903_bad315cee0.jpg
 			u'tags': [{
 				u'eye_left': {u'y': 31.2, u'x': 55.6},
 				u'confirmed': False,
-				u'uids': [{u'confidence': 34, u'uid': u'guido@tag'}],
+				u'uids': [{u'confidence': 34, u'uid': u'guido@testns'}],
 				u'width': 13.6,
 				u'yaw': -45,
 				u'manual': False,
@@ -166,7 +166,7 @@ http://farm1.static.flickr.com/41/104498903_bad315cee0.jpg
 		u'usage': {...omitted for clarity...}
 	}
 
-	As you can see by looking at the uids key, Guido was now recognized with a 34% confidence!
+As you can see by looking at the "uids" list, Guido was now recognized with a 34% confidence!
 
 For more information about the SkyBiometry Face Detection and Recognition API and how to use it, visit the `official documentation`_.
 
