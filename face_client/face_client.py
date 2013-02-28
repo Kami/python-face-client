@@ -142,6 +142,9 @@ class FaceClient(object):
 			buffers.append(buffer)
 		else:
 			data.update({'urls': urls})
+			
+		if aggressive:
+            		data['detector'] = 'Aggressive'
 
 		self.__append_user_auth_data(data, facebook_uids, twitter_uids)
 		self.__append_optional_arguments(data, train=train, namespace=namespace)
@@ -275,6 +278,19 @@ class FaceClient(object):
 									 {'namespaces': namespaces})
 
 		return response
+		
+	def account_namespaces(self):
+        	"""
+        	Returns all valid data namespaces for user authorized by specified api_key.
+		
+		http://api.skybiometry.com/fc/account/namespaces
+        	"""
+
+        	response = self.send_request('account/namespaces',
+                                     )
+
+        	return response
+        
 
 	def __check_user_auth_credentials(self, uids):
 		# Check if needed credentials are provided
@@ -355,8 +371,6 @@ class FaceClient(object):
 		else:
 			post_data = urllib.urlencode(data)
 			headers = {}
-
-		print post_data
 
 		request = urllib2.Request(url, headers=headers, data=post_data)
 		response = urllib2.urlopen(request)
