@@ -69,7 +69,7 @@ class FaceClient(object):
 		information of the tag, eyes, nose and mouth, as well as the gender,
 		glasses, and smiling attributes.
 
-		http://developers.face.com/docs/api/faces-detect/
+		http://www.skybiometry.com/Documentation#faces/detect
 		"""
 		if not urls and not file and not buffer:
 			raise AttributeError('Missing URLs/filename/buffer argument')
@@ -90,7 +90,7 @@ class FaceClient(object):
 			data['urls'] = urls
 
 		if aggressive:
-			data['detector'] = 'Aggressive'
+			data['detector'] = 'aggressive'
 
 		response = self.send_request('faces/detect', data, files, buffers)
 		return response
@@ -99,7 +99,7 @@ class FaceClient(object):
 		"""
 		Reports training set status for the specified UIDs.
 
-		http://developers.face.com/docs/api/faces-status/
+		http://www.skybiometry.com/Documentation#faces/status
 		"""
 		if not uids:
 			raise AttributeError('Missing user IDs')
@@ -117,12 +117,12 @@ class FaceClient(object):
 		"""
 		Attempts to detect and recognize one or more user IDs' faces, in one
 		or more photos.
-		For each detected face, the face.com engine will return the most likely
+		For each detected face, the SkyBiometry engine will return the most likely
 		user IDs, or empty result for unrecognized faces. In addition, each
 		tag includes a threshold score - any score below this number is
 		considered a low-probability hit.
 
-		http://developers.face.com/docs/api/faces-recognize/
+		http://www.skybiometry.com/Documentation#faces/recognize
 		"""
 		if not uids or (not urls and not file and not buffer):
 			raise AttributeError('Missing required arguments')
@@ -142,9 +142,9 @@ class FaceClient(object):
 			buffers.append(buffer)
 		else:
 			data.update({'urls': urls})
-			
+
 		if aggressive:
-            		data['detector'] = 'Aggressive'
+			data['detector'] = 'aggressive'
 
 		self.__append_user_auth_data(data, facebook_uids, twitter_uids)
 		self.__append_optional_arguments(data, train=train, namespace=namespace)
@@ -157,7 +157,7 @@ class FaceClient(object):
 		Calls the training procedure for the specified UIDs, and reports back
 		changes.
 
-		http://developers.face.com/docs/api/faces-train/
+		http://www.skybiometry.com/Documentation#faces/train
 		"""
 		if not uids:
 			raise AttributeError('Missing user IDs')
@@ -180,7 +180,7 @@ class FaceClient(object):
 		corresponding to a more specific criteria such as front-facing,
 		recent, or where two or more users appear together in same photos.
 
-		http://developers.face.com/docs/api/tags-get/
+		http://www.skybiometry.com/Documentation#tags/get
 		"""
 		if not uids and not urls:
 			raise AttributeError('Missing user IDs or URLs')
@@ -198,7 +198,7 @@ class FaceClient(object):
 		Add a (manual) face tag to a photo. Use this method to add face tags
 		where those were not detected for completeness of your service.
 
-		http://developers.face.com/docs/api/tags-add/
+		http://www.skybiometry.com/Documentation#tags/add
 		"""
 		if not url or not x or not y or not width or not uid or not tagger_id:
 			raise AttributeError('Missing one of the required arguments')
@@ -217,14 +217,12 @@ class FaceClient(object):
 		response = self.send_request('tags/add', data)
 		return response
 
-	def tags_save(self, tids=None, uid=None, tagger_id=None, label=None, \
-				password=None):
+	def tags_save(self, tids=None, uid=None, tagger_id=None, label=None, password=None):
 		"""
 		Saves a face tag. Use this method to save tags for training the
-		face.com index, or for future use of the faces.detect and tags.get
-		methods.
+		index, or for future use of the faces.detect and tags.get methods.
 
-		http://developers.face.com/docs/api/tags-save/
+		http://www.skybiometry.com/Documentation#tags/save
 		"""
 		if not tids or not uid:
 			raise AttributeError('Missing required argument')
@@ -243,7 +241,7 @@ class FaceClient(object):
 		"""
 		Remove a previously saved face tag from a photo.
 
-		http://developers.face.com/docs/api/tags-remove/
+		http://www.skybiometry.com/Documentation#tags/remove
 		"""
 		if not tids:
 			raise AttributeError('Missing tag IDs')
@@ -259,7 +257,7 @@ class FaceClient(object):
 		Returns current rate limits for the account represented by the passed
 		API key and Secret.
 
-		http://developers.face.com/docs/api/account-limits/
+		http://www.skybiometry.com/Documentation#account/limits
 		"""
 		response = self.send_request('account/limits')
 		return response['usage']
@@ -269,28 +267,25 @@ class FaceClient(object):
 		Returns current rate limits for the account represented by the passed
 		API key and Secret.
 
-		http://developers.face.com/docs/api/account-limits/
+		http://www.skybiometry.com/Documentation#account/users
 		"""
 		if not namespaces:
 			raise AttributeError('Missing namespaces argument')
 
-		response = self.send_request('account/users',
-									 {'namespaces': namespaces})
+		response = self.send_request('account/users', { 'namespaces': namespaces })
 
 		return response
-		
+
 	def account_namespaces(self):
-        	"""
-        	Returns all valid data namespaces for user authorized by specified api_key.
-		
-		http://api.skybiometry.com/fc/account/namespaces
-        	"""
+		"""
+		Returns all valid data namespaces for user authorized by specified API key.
 
-        	response = self.send_request('account/namespaces',
-                                     )
+		http://www.skybiometry.com/Documentation#account/namespaces
+		"""
 
-        	return response
-        
+		response = self.send_request('account/namespaces')
+
+		return response
 
 	def __check_user_auth_credentials(self, uids):
 		# Check if needed credentials are provided
