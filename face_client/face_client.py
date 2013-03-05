@@ -368,8 +368,11 @@ class FaceClient(object):
 			headers = {}
 
 		request = urllib2.Request(url, headers=headers, data=post_data)
-		response = urllib2.urlopen(request)
-		response = response.read()
+		try:
+			response = urllib2.urlopen(request)
+			response = response.read()
+		except urllib2.HTTPError as e:
+			response = e.read()
 		response_data = json.loads(response)
 
 		if 'status' in response_data and response_data['status'] == 'failure':
