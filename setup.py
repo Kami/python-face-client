@@ -2,7 +2,7 @@
 #!/usr/bin/env python
 import os
 import re
-from distutils.core import setup
+from setuptools import setup
 
 version_re = re.compile(
     r'__version__ = (\(.*?\))')
@@ -29,8 +29,11 @@ setup(name='face_client',
       url='http://github.com/Liuftvafas/python-face-client',
       download_url='http://github.com/Liuftvafas/python-face-client/',
       packages=['face_client'],
-      provides=['face_client'],
-
+      provides=['face_client'], 
+      install_requires=[
+          'requests',
+		  'future'
+        ],	  
       classifiers=[
           'Development Status :: 4 - Beta',
           'Environment :: Console',
