@@ -45,7 +45,14 @@ class Part(object):
         self._headers = headers.copy()
         self._name = name
         self._filename = filename
-        self._body = body
+
+        # If body is a byte string - decode it to a regular string.
+        # Required for Python 3.X compatibility as string handling has changed.
+        if filename and 'b\'' in str(body):
+            self._body = body.decode('latin')
+        else:
+            self._body = body
+
         # We respect any content type passed in, but otherwise set it here.
         # We set the content disposition now, overwriting any prior value.
         if self._filename == None:

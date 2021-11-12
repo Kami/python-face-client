@@ -1,3 +1,3 @@
-__version__ = (1, 2, 'dev')
+__version__ = (1, 4, 'dev')
 
 from face_client import *
