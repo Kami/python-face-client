@@ -2,7 +2,7 @@
 #!/usr/bin/env python
 import os
 import re
-from distutils.core import setup
+from setuptools import setup
 
 version_re = re.compile(
     r'__version__ = (\(.*?\))')
@@ -22,15 +22,18 @@ fp.close()
 
 setup(name='face_client',
       version='.' . join(map(str, version)),
-      description='face.com face recognition Python API client library',
+      description='SkyBiometry Face Detection and Recognition API Python client library',
       author='Tomaž Muraus',
       author_email='tomaz@tomaz.me',
       license='BSD',
-      url='http://github.com/Kami/python-face-client',
-      download_url='http://github.com/Kami/python-face-client/',
+      url='http://github.com/Liuftvafas/python-face-client',
+      download_url='http://github.com/Liuftvafas/python-face-client/',
       packages=['face_client'],
-      provides=['face_client'],
-
+      provides=['face_client'], 
+      install_requires=[
+          'requests',
+		  'future'
+        ],	  
       classifiers=[
           'Development Status :: 4 - Beta',
           'Environment :: Console',
